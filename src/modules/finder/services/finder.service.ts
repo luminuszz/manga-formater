@@ -21,7 +21,7 @@ type Img = HTMLImageElement
 export class FinderService {
     public async luachBrowser(): Promise<puppeteer.Browser> {
         const browser = puppeteer.launch({
-            headless: true,
+            headless: false,
         })
 
         return browser
@@ -54,8 +54,10 @@ export class FinderService {
             parseInt(e.innerText)
         )
 
-        for (let l = 0; l < totalOfPages; l++) {
+        for (let l = 0; l < 8; l++) {
             await page.waitForTimeout(1000)
+
+            await page.click('.page-next')
 
             const currentPage = await page.$eval(
                 'em[reader-current-page]',
@@ -66,14 +68,14 @@ export class FinderService {
                 (img: Img) => img.src
             )
             pages.push({ currentPage: currentPage, img })
-
-            return {
-                author,
-                pages,
-                title,
-                cap,
-            } as ExtractCap
         }
+
+        return {
+            author,
+            pages,
+            title,
+            cap,
+        } as ExtractCap
     }
 
     public async execute(url: string): Promise<ExtractCap> {
@@ -86,6 +88,8 @@ export class FinderService {
         const extract = await this.extractPages(page)
 
         console.log(extract)
+
+        await browser.close()
 
         return extract
     }
