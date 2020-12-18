@@ -18,9 +18,11 @@ export class SaveService {
         )
     }
 
-    public async execute(data: ExtractCap): Promise<void> {
+    public async execute(data: ExtractCap): Promise<ExtractCap> {
         data.pages.map(async page => {
-            await this.renderImage(page.img, `cap-${page.pageNumber}.jpg`)
+            await this.renderImage(page.img, `page-${page.currentPage}.jpg`)
         })
+
+        return data
     }
 }

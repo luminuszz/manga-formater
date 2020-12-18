@@ -5,7 +5,7 @@ export interface IRequest {
 
 interface Page {
     img: string
-    pageNumber: number
+    currentPage: number
 }
 
 export interface ExtractCap {
@@ -21,7 +21,7 @@ type Img = HTMLImageElement
 export class FinderService {
     public async luachBrowser(): Promise<puppeteer.Browser> {
         const browser = puppeteer.launch({
-            headless: false,
+            headless: true,
         })
 
         return browser
@@ -54,7 +54,7 @@ export class FinderService {
             parseInt(e.innerText)
         )
 
-        for (let l = 0; l < 8; l++) {
+        for (let l = 0; l < totalOfPages; l++) {
             await page.waitForTimeout(1000)
 
             await page.click('.page-next')
