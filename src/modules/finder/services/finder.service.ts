@@ -1,7 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import * as puppeteer from 'puppeteer'
-import { MangaEvent } from 'src/modules/manga/events/registerManga.event'
-import * as CloudflareBypasser from 'cloudflare-bypasser'
 import { Injectable } from '@nestjs/common'
 
 export interface IRequest {
@@ -101,7 +99,7 @@ export class FinderService {
 
         await browser.close()
 
-        this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
+        //   this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
 
         return extract
     }

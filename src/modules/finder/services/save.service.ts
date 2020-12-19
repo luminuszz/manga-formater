@@ -31,6 +31,8 @@ export class SaveService {
     }
 
     public async execute(data: ExtractCap): Promise<void> {
+        const formatterTitle = data.title.replace(/\s/g, '-')
+
         const folder = join(
             __dirname,
             '..',
@@ -38,13 +40,20 @@ export class SaveService {
             '..',
             '..',
             'temp',
-            `${data.title}-cap-${data.cap}`
+            `${formatterTitle}-cap-${data.cap}`
         )
 
         await fs.promises.mkdir(folder)
 
-        data.pages.map(async page => {
-            await this.renderImage(page.img, `${page.currentPage}.jpg`, folder)
-        })
+        for (let l = 0; l < data.pages.length; l++) {
+            await this.renderImage(
+                data.pages[l].img,
+                `${data.pages[l].currentPage}.jpg`,
+                folder
+            )
+        }
+        const { cap } = data
+
+        this.converterQueue.add({ cap, title: formatterTitle })
     }
 }

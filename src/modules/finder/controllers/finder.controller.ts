@@ -19,11 +19,6 @@ export class FinderController {
     public async activeFinderRequest(
         @Body('paths') paths: string[]
     ): Promise<void> {
-        //  await this.finderService.execute(paths[0])
-        await this.converterService.execute({ cap: 5, title: '' })
-        /* 
-        paths.map(async url => {
-            this.addFinderServiceQueue.add({ url })
-        }) */
+        paths.map(item => this.addFinderServiceQueue.add({ url: item }))
     }
 }

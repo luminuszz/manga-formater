@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import * as IlovepdfSDK from 'ilovepdf-sdk'
+import * as rimraf from 'rimraf'
 
 import * as fs from 'fs'
 
-import { join, basename } from 'path'
-import { async } from 'rxjs'
-import { api } from 'src/config/api.config'
+import { join } from 'path'
 
-const path = join(__dirname, '..', '..', '..', '..', 'temp')
 const outPath = join(__dirname, '..', '..', '..', '..', 'download')
 
 export interface GetParams {
@@ -28,12 +26,25 @@ export class ConverterService {
         this.files = []
     }
 
-    private async getFiles(): Promise<string[]> {
+    private async getFiles(
+        folderTitle: string,
+        cap: number
+    ): Promise<{ path: string; listDicrecotry: string[] }> {
+        const path = join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            '..',
+            'temp',
+            `${folderTitle}-cap-${cap}`
+        )
+
         const fsp = fs.promises
 
         const listDicrecotry = await fsp.readdir(path)
 
-        return listDicrecotry
+        return { listDicrecotry, path }
     }
 
     public async execute({ cap, title }: GetParams): Promise<void> {
@@ -42,16 +53,25 @@ export class ConverterService {
             process.env.LOVE_PDF_SECRET_KEY
         )
 
-        const pages = await this.getFiles()
+        const { listDicrecotry, path } = await this.getFiles(title, cap)
 
         const task = await sdk.createTask('imagepdf')
 
-        for (let l = 0; l < pages.length; l++) {
-            await task.addFile(`${path}/${pages[l]}`)
+        for (let l = 0; l < listDicrecotry.length; l++) {
+            await task.addFile(`${path}/${listDicrecotry[l]}`)
         }
 
         await task.process()
 
         await task.download(`${outPath}/${title}-${cap}.pdf`)
+
+        listDicrecotry.forEach(
+            async page => await fs.promises.unlink(`${path}/${page}`)
+        )
+        rimraf(path, () => console.log('diretorio apagado'))
+
+        console.log(
+            'Processo finalizado e arquivos apagados, verificar pasta download'
+        )
     }
 }
