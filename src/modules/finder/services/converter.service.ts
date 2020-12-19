@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import * as IlovepdfSDK from 'ilovepdf-sdk'
+import * as FormData from 'form-data'
 
 import * as fs from 'fs'
 
-import { join } from 'path'
+import { join, basename } from 'path'
+import { async } from 'rxjs'
+import { api } from 'src/config/api.config'
 
 const path = join(__dirname, '..', '..', '..', '..', 'temp')
 const outPath = join(__dirname, '..', '..', '..', '..', 'download')
@@ -13,8 +15,19 @@ export interface GetParams {
     cap: number
 }
 
+interface ServerResponse {
+    server: string
+    task: string
+}
+
 @Injectable()
 export class ConverterService {
+    private files = []
+
+    constructor() {
+        this.files = []
+    }
+
     private async getFiles(): Promise<string[]> {
         const fsp = fs.promises
 
@@ -23,27 +36,78 @@ export class ConverterService {
         return listDicrecotry
     }
 
-    public async execute({ cap, title }: GetParams): Promise<void> {
-        console.log('foi chamado')
+    private async sendToService(
+        task: string,
+        server: string,
+        page: string
+    ): Promise<string> {
+        const form = new FormData()
 
-        const fsp = fs.promises
+        const file = {
+            local: '',
+            server: '',
+        }
 
-        const sdk = new IlovepdfSDK(
-            process.env.LOVE_PDF_PROJECT_KEY,
-            process.env.LOVE_PDF_SECRET_KEY
+        file.local = `${path}/${page}`
+
+        const stream = fs.createReadStream(`${path}/${page}`)
+
+        form.append('file', stream)
+
+        form.append('task', task)
+
+        // eslint-disable-next-line camelcase
+        const responseUpload = await api.post<{ server_filename: string }>(
+            `https://${server}/v1/upload`,
+            form,
+            {
+                headers: form.getHeaders(),
+            }
         )
 
-        const task = await sdk.createTask('imagepdf')
-        const images = await this.getFiles()
+        file.server = responseUpload.data.server_filename
 
-        images.map(async image => {
-            await task.addFile(`${path}/${image}`)
-            await task.process()
-            await task.download(`${outPath}/${title}-cap${cap}.pdf`)
-        })
+        this.files.push(file)
 
-        images.map(async image => {
-            await fsp.unlink(`${path}/${image}`)
-        })
+        return responseUpload.data.server_filename
+    }
+
+    public async execute({ cap, title }: GetParams): Promise<void> {
+        const serverResponse = await api.get<ServerResponse>(
+            'https://api.ilovepdf.com/v1/start/imagepdf'
+        )
+
+        const { server, task } = serverResponse.data
+
+        const pages = await this.getFiles()
+
+        console.log('servidores recuperados')
+
+        for (let l = 0; l < pages.length; l++) {
+            const teste = await this.sendToService(task, server, pages[l])
+
+            this.files.push({
+                server_filename: teste,
+                filename: basename(`${pages}/${pages[l]}`),
+            })
+        }
+        console.log('pages enviadas')
+
+        console.log(this.files)
+
+        const payload = {
+            task,
+            tool: 'imagepdf',
+            files: this.files,
+            metas: {
+                pagesize: 'fit',
+            },
+        }
+
+        console.log('Começando processo')
+
+        const teste = await api.post(`https://${server}/v1/process`, payload)
+
+        console.log(teste)
     }
 }

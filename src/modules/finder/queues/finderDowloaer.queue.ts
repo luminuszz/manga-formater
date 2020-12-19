@@ -45,6 +45,6 @@ export class FindDerDownloaderConsumer {
 
     @OnQueueCompleted()
     private completed(job: Job, data: ExtractCap) {
-        this.saveFileQueue.add(data)
+        //   this.saveFileQueue.add(data)
     }
 }

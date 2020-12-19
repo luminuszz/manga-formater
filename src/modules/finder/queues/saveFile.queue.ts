@@ -18,15 +18,11 @@ import { QueueKeys } from './index'
 @Processor(QueueKeys.saveFile)
 @Injectable()
 export class SaveFileQueueProcess {
-    constructor(
-        private readonly saveService: SaveService,
-        @InjectQueue(QueueKeys.converterFile)
-        private readonly converterQueue: Queue<GetParams>
-    ) {}
+    constructor(private readonly saveService: SaveService) {}
 
     @Process()
-    public async execute(job: Job<ExtractCap>): Promise<ExtractCap> {
-        return await this.saveService.execute(job.data)
+    public async execute(job: Job<ExtractCap>): Promise<void> {
+        await this.saveService.execute(job.data)
     }
 
     @OnQueueActive()
@@ -46,12 +42,7 @@ export class SaveFileQueueProcess {
     }
 
     @OnQueueCompleted()
-    private completed(job: Job<ExtractCap>, data: ExtractCap) {
-        this.converterQueue.add({
-            cap: data.cap,
-            title: data.title,
-        })
-
+    private completed(job: Job<ExtractCap>) {
         console.log(
             `job ${job.id} da fila ${job.name} finalizado, enviado para fila de conversão...`
         )

@@ -4,25 +4,47 @@ import { join } from 'path'
 import * as fetch from 'node-fetch'
 
 import * as fs from 'fs'
+import { InjectQueue } from '@nestjs/bull'
+import { QueueKeys } from '../queues'
+import { Queue } from 'bull'
+import { GetParams } from '../services/converter.service'
 
 @Injectable()
 export class SaveService {
-    private async renderImage(url: string, fileName: string) {
-        const temp = (fileName: string) =>
-            join(__dirname, '..', '..', '..', '..', 'temp', fileName)
+    constructor(
+        @InjectQueue(QueueKeys.converterFile)
+        private readonly converterQueue: Queue<GetParams>
+    ) {}
 
-        const response = await fetch(url)
-        const buffer = await response.buffer()
-        fs.writeFile(temp(fileName), buffer, data =>
-            console.log('finished downloading!', data)
-        )
+    private async renderImage(url: string, fileName: string, path: string) {
+        try {
+            const response = await fetch(url)
+
+            const buffer = await response.buffer()
+
+            await fs.promises.writeFile(`${path}/${fileName}`, buffer)
+
+            console.log(`check -> ${fileName},`)
+        } catch (error) {
+            console.log(`error -> ${fileName}`)
+        }
     }
 
-    public async execute(data: ExtractCap): Promise<ExtractCap> {
-        data.pages.map(async page => {
-            await this.renderImage(page.img, `page-${page.currentPage}.jpg`)
-        })
+    public async execute(data: ExtractCap): Promise<void> {
+        const folder = join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            '..',
+            'temp',
+            `${data.title}-cap-${data.cap}`
+        )
 
-        return data
+        await fs.promises.mkdir(folder)
+
+        data.pages.map(async page => {
+            await this.renderImage(page.img, `${page.currentPage}.jpg`, folder)
+        })
     }
 }

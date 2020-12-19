@@ -1,4 +1,9 @@
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import * as puppeteer from 'puppeteer'
+import { MangaEvent } from 'src/modules/manga/events/registerManga.event'
+import * as CloudflareBypasser from 'cloudflare-bypasser'
+import { Injectable } from '@nestjs/common'
+
 export interface IRequest {
     url: string
 }
@@ -18,10 +23,14 @@ export interface ExtractCap {
 type Span = HTMLSpanElement
 type Img = HTMLImageElement
 
+@Injectable()
 export class FinderService {
+    constructor(private readonly eventEmitter: EventEmitter2) {}
+
     public async luachBrowser(): Promise<puppeteer.Browser> {
         const browser = puppeteer.launch({
             headless: true,
+            ignoreHTTPSErrors: true,
         })
 
         return browser
@@ -31,6 +40,7 @@ export class FinderService {
         const pages = []
 
         const title = await page.$eval('.title', (span: Span) => span.innerText)
+
         const author = await page.$eval(
             '.author',
             (span: Span) => span.innerText
@@ -55,7 +65,7 @@ export class FinderService {
         )
 
         for (let l = 0; l < totalOfPages; l++) {
-            await page.waitForTimeout(1000)
+            await page.waitForTimeout(1500)
 
             await page.click('.page-next')
 
@@ -90,6 +100,8 @@ export class FinderService {
         console.log(extract)
 
         await browser.close()
+
+        this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
 
         return extract
     }
