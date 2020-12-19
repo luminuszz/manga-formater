@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import * as FormData from 'form-data'
+import * as IlovepdfSDK from 'ilovepdf-sdk'
 
 import * as fs from 'fs'
 
@@ -36,78 +36,22 @@ export class ConverterService {
         return listDicrecotry
     }
 
-    private async sendToService(
-        task: string,
-        server: string,
-        page: string
-    ): Promise<string> {
-        const form = new FormData()
-
-        const file = {
-            local: '',
-            server: '',
-        }
-
-        file.local = `${path}/${page}`
-
-        const stream = fs.createReadStream(`${path}/${page}`)
-
-        form.append('file', stream)
-
-        form.append('task', task)
-
-        // eslint-disable-next-line camelcase
-        const responseUpload = await api.post<{ server_filename: string }>(
-            `https://${server}/v1/upload`,
-            form,
-            {
-                headers: form.getHeaders(),
-            }
-        )
-
-        file.server = responseUpload.data.server_filename
-
-        this.files.push(file)
-
-        return responseUpload.data.server_filename
-    }
-
     public async execute({ cap, title }: GetParams): Promise<void> {
-        const serverResponse = await api.get<ServerResponse>(
-            'https://api.ilovepdf.com/v1/start/imagepdf'
+        const sdk = new IlovepdfSDK(
+            process.env.LOVE_PDF_PROJECT_KEY,
+            process.env.LOVE_PDF_SECRET_KEY
         )
-
-        const { server, task } = serverResponse.data
 
         const pages = await this.getFiles()
 
-        console.log('servidores recuperados')
+        const task = await sdk.createTask('imagepdf')
 
         for (let l = 0; l < pages.length; l++) {
-            const teste = await this.sendToService(task, server, pages[l])
-
-            this.files.push({
-                server_filename: teste,
-                filename: basename(`${pages}/${pages[l]}`),
-            })
-        }
-        console.log('pages enviadas')
-
-        console.log(this.files)
-
-        const payload = {
-            task,
-            tool: 'imagepdf',
-            files: this.files,
-            metas: {
-                pagesize: 'fit',
-            },
+            await task.addFile(`${path}/${pages[l]}`)
         }
 
-        console.log('Começando processo')
+        await task.process()
 
-        const teste = await api.post(`https://${server}/v1/process`, payload)
-
-        console.log(teste)
+        await task.download(`${outPath}/${title}-${cap}.pdf`)
     }
 }
