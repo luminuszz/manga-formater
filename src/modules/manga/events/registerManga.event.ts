@@ -20,16 +20,20 @@ export class RegisterMangaEvent {
         )
 
         if (checkMangaExists) {
-            await this.mangaService.addChapter(checkMangaExists.id, {
-                chapterNumber: payload.cap,
-                pages: payload.pages,
-            })
+            const checkChapterExists = checkMangaExists.chapters.find(
+                chapter => chapter.chapterNumber === payload.cap
+            )
+
+            if (!checkChapterExists) {
+                await this.mangaService.addChapter(checkMangaExists.id, {
+                    chapterNumber: payload.cap,
+                    pages: payload.pages,
+                })
+            }
 
             return
         }
 
         const manga = await this.mangaService.createManga(payload)
-
-        console.log(manga)
     }
 }
