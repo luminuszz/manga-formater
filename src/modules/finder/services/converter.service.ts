@@ -64,11 +64,20 @@ export class ConverterService {
 
         const task = await sdk.createTask('imagepdf')
 
+        console.log('Requisição de trabalho a i love dpf inciada')
+        console.log('Começando processo de envio das paginas')
+
         for (const page of filesArray) {
-            await task.addFile(`${path}/${page}.jpg`)
+            console.log(`Enviando -> page ${page}`)
+            await task.addFile(`${path}/${page}`)
+            console.log(`Enviada -> page ${page}`)
         }
 
+        console.log('Enviando requisição de processamento')
+
         await task.process()
+
+        console.log('Processamento completo, começando requisição de download')
 
         await task.download(`${outPath}/${title}-cap-${cap}.pdf`)
 
