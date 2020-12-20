@@ -20,12 +20,6 @@ interface ServerResponse {
 
 @Injectable()
 export class ConverterService {
-    private files = []
-
-    constructor() {
-        this.files = []
-    }
-
     private async getFiles(
         folderTitle: string,
         cap: number
@@ -47,6 +41,15 @@ export class ConverterService {
         return { listDicrecotry, path }
     }
 
+    private orderPages(listDicrecotry: string[]): string[] {
+        const transform = listDicrecotry
+            .map(page => Number(page.replace('.jpg', '')))
+            .sort((a, b) => a - b)
+            .map(pageNumber => `${pageNumber}.jpg`)
+
+        return transform
+    }
+
     public async execute({ cap, title }: GetParams): Promise<void> {
         const sdk = new IlovepdfSDK(
             process.env.LOVE_PDF_PROJECT_KEY,
@@ -55,10 +58,14 @@ export class ConverterService {
 
         const { listDicrecotry, path } = await this.getFiles(title, cap)
 
+        const filesArray = this.orderPages(listDicrecotry)
+
+        console.log(filesArray)
+
         const task = await sdk.createTask('imagepdf')
 
-        for (let l = 0; l < listDicrecotry.length; l++) {
-            await task.addFile(`${path}/${listDicrecotry[l]}`)
+        for (const page of filesArray) {
+            await task.addFile(`${path}/${page}.jpg`)
         }
 
         await task.process()
@@ -68,6 +75,7 @@ export class ConverterService {
         listDicrecotry.forEach(
             async page => await fs.promises.unlink(`${path}/${page}`)
         )
+
         rimraf(path, () => console.log('diretorio apagado'))
 
         console.log(

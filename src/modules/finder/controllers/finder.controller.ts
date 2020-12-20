@@ -22,6 +22,11 @@ export class FinderController {
     public async activeFinderRequest(
         @Body('paths', URLFormatter) paths: string[]
     ): Promise<void> {
-        paths.map(item => this.addFinderServiceQueue.add({ url: item }))
+        await this.converterService.execute({
+            title: 'Arifureta-Shokugyou-de-Sekai-Saikyou',
+            cap: 2,
+        })
+
+        // paths.map(item => this.addFinderServiceQueue.add({ url: item }))
     }
 }
