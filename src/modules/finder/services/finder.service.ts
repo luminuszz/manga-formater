@@ -1,12 +1,13 @@
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import * as puppeteer from 'puppeteer'
 import { Injectable } from '@nestjs/common'
+import { MangaEvent } from 'src/modules/manga/events/registerManga.event'
 
 export interface IRequest {
     url: string
 }
 
-interface Page {
+export interface Page {
     img: string
     currentPage: number
 }
@@ -99,7 +100,7 @@ export class FinderService {
 
         await browser.close()
 
-        //   this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
+        this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
 
         return extract
     }

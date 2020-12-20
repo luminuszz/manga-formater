@@ -15,6 +15,19 @@ export class RegisterMangaEvent {
     public async executeMangaExtract(payload: createMangaDTO): Promise<void> {
         console.log(`-> event: ${MangaEvent.mangaExtract} summon `)
 
+        const checkMangaExists = await this.mangaService.findOneMangaByName(
+            payload.title
+        )
+
+        if (checkMangaExists) {
+            await this.mangaService.addChapter(checkMangaExists.id, {
+                chapterNumber: payload.cap,
+                pages: payload.pages,
+            })
+
+            return
+        }
+
         const manga = await this.mangaService.createManga(payload)
 
         console.log(manga)

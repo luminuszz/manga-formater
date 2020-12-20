@@ -63,7 +63,7 @@ export class ConverterService {
 
         await task.process()
 
-        await task.download(`${outPath}/${title}-${cap}.pdf`)
+        await task.download(`${outPath}/${title}-cap-${cap}.pdf`)
 
         listDicrecotry.forEach(
             async page => await fs.promises.unlink(`${path}/${page}`)

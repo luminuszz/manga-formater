@@ -3,7 +3,9 @@ import { Body, Controller, Post } from '@nestjs/common'
 import { Queue } from 'bull'
 import { QueueKeys } from '../queues'
 import { ConverterService } from '../services/converter.service'
-import { FinderService, IRequest } from '../services/finder.service'
+import { ExtractCap, FinderService, IRequest } from '../services/finder.service'
+import { URLFormatter } from '../pipes/url.pipe'
+import { MangaService } from 'src/modules/manga/services/manga.service'
 
 @Controller('finder')
 export class FinderController {
@@ -12,12 +14,13 @@ export class FinderController {
         private readonly addFinderServiceQueue: Queue<IRequest>,
         private readonly service: FinderService,
         private converterService: ConverterService,
-        private finderService: FinderService
+        private finderService: FinderService,
+        private readonly mangaService: MangaService
     ) {}
 
     @Post()
     public async activeFinderRequest(
-        @Body('paths') paths: string[]
+        @Body('paths', URLFormatter) paths: string[]
     ): Promise<void> {
         paths.map(item => this.addFinderServiceQueue.add({ url: item }))
     }
