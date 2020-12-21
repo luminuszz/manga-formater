@@ -6,7 +6,7 @@ import { SaveFileQueueProcess } from './queues/saveFile.queue'
 import { FinderService } from './services/finder.service'
 import { QueueKeys } from './queues'
 import { SaveService } from './services/save.service'
-import { ConverterService } from './services/converter.service'
+import { ConverterServiceInstance } from './services/converter.service'
 import { ConverterFileProcess } from './queues/converterPdf.queue'
 import { FinderFilePipe } from './queues/filter.queue'
 import { MangaModule } from '../manga/manga.module'
@@ -34,7 +34,7 @@ import { MangaModule } from '../manga/manga.module'
         ConverterFileProcess,
         FinderFilePipe,
         SaveService,
-        ConverterService,
+        ConverterServiceInstance,
     ],
     controllers: [FinderController],
 })

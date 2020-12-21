@@ -9,7 +9,7 @@ import {
 import { Injectable } from '@nestjs/common'
 import { Job } from 'bull'
 import { ConverterService } from '../services/converter.service'
-import { ExtractCap } from '../services/finder.service'
+import { ExtractCap } from '../dtos/finderService'
 
 import { QueueKeys } from './index'
 

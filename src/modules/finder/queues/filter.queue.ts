@@ -10,7 +10,7 @@ import {
 import { Injectable } from '@nestjs/common'
 import { Job, Queue } from 'bull'
 import { MangaService } from 'src/modules/manga/services/manga.service'
-import { ExtractCap, IRequest } from '../services/finder.service'
+import { ExtractCap, IRequest } from '../dtos/finderService'
 
 import { QueueKeys } from './index'
 

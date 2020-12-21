@@ -9,7 +9,8 @@ import {
 } from '@nestjs/bull'
 import { Injectable } from '@nestjs/common'
 import { Job, Queue } from 'bull'
-import { FinderService, IRequest, ExtractCap } from '../services/finder.service'
+import { IRequest, ExtractCap } from '../dtos/finderService'
+import { FinderService } from '../services/finder.service'
 
 import { QueueKeys } from './index'
 
@@ -23,7 +24,7 @@ export class FindDerDownloaderConsumer {
     ) {}
 
     @Process()
-    public async activeFinderService(job: Job<IRequest>): Promise<any> {
+    public async activeFinderService(job: Job<IRequest>): Promise<ExtractCap> {
         return await this.findService.execute(job.data.url)
     }
 

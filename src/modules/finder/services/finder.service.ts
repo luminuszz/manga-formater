@@ -2,31 +2,21 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import * as puppeteer from 'puppeteer'
 import { Injectable } from '@nestjs/common'
 import { MangaEvent } from 'src/modules/manga/events/registerManga.event'
-
-export interface IRequest {
-    url: string
-}
-
-export interface Page {
-    img: string
-    currentPage: number
-}
-
-export interface ExtractCap {
-    pages: Page[]
-    title: string
-    author: string
-    cap: number
-}
-
-type Span = HTMLSpanElement
-type Img = HTMLImageElement
+import { ExtractCap, Page, Img, Span } from '../dtos/finderService'
 
 @Injectable()
 export class FinderService {
-    constructor(private readonly eventEmitter: EventEmitter2) {}
+    private _pages: Page[] = []
 
-    public async luachBrowser(): Promise<puppeteer.Browser> {
+    private get pages(): Page[] {
+        return this._pages
+    }
+
+    constructor(private readonly eventEmitter: EventEmitter2) {
+        // this._pages = []
+    }
+
+    public async lunchBrowser(): Promise<puppeteer.Browser> {
         const browser = puppeteer.launch({
             headless: true,
             ignoreHTTPSErrors: true,
@@ -36,8 +26,6 @@ export class FinderService {
     }
 
     private async extractPages(page: puppeteer.Page): Promise<ExtractCap> {
-        const pages = []
-
         const title = await page.$eval('.title', (span: Span) => span.innerText)
 
         const author = await page.$eval(
@@ -57,7 +45,7 @@ export class FinderService {
 
         const img = await page.$eval('.manga-image img', (img: Img) => img.src)
 
-        pages.push({ currentPage, img })
+        this._pages.push({ currentPage, img })
 
         const cap = await page.$eval('em[reader-current-chapter]', (e: Span) =>
             parseInt(e.innerText)
@@ -76,12 +64,12 @@ export class FinderService {
                 '.manga-image img',
                 (img: Img) => img.src
             )
-            pages.push({ currentPage: currentPage, img })
+            this._pages.push({ currentPage: currentPage, img })
         }
 
         return {
             author,
-            pages,
+            pages: this.pages,
             title,
             cap,
         } as ExtractCap
@@ -89,15 +77,13 @@ export class FinderService {
 
     public async execute(url: string): Promise<ExtractCap> {
         try {
-            const browser = await this.luachBrowser()
+            const browser = await this.lunchBrowser()
 
             const page = await browser.newPage()
 
             await page.goto(url)
 
             const extract = await this.extractPages(page)
-
-            console.log(extract)
 
             await browser.close()
 

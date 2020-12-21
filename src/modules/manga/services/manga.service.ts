@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { MongoRepository, ObjectID } from 'typeorm'
 import { Manga, Chapter, Page } from '../schemas/manga.schema'
 import { Chapter as ChapterRequest } from '../dtos/createManga.dto'
-import { ExtractCap } from 'src/modules/finder/services/finder.service'
+import { ExtractCap } from 'src/modules/finder/dtos/finderService'
 
 @Injectable()
 export class MangaService {

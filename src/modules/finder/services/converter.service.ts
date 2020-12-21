@@ -1,40 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Injectable } from '@nestjs/common'
 import * as IlovepdfSDK from 'ilovepdf-sdk'
 import * as rimraf from 'rimraf'
-
 import * as fs from 'fs'
 
+import { Injectable } from '@nestjs/common'
+import { outPath } from '../dtos/constants'
+import { GetParams, ILovePdfSDK, ProcessParams } from '../dtos/converterService'
 import { join } from 'path'
 
-const outPath = join(__dirname, '..', '..', '..', '..', 'download')
-
-export interface GetParams {
-    title: string
-    cap: number
-}
-
-interface ILovePdfSDK {
-    createTask: (taskToken: string) => Promise<any>
-    addFile: (filePath: string) => Promise<any>
-    process: () => Promise<any>
-    download: (outDirectory: string) => Promise<any>
-}
-
-interface ILovePDfProcess {
-    filesArray: string[]
-    path: string
-    sdk: ILovePdfSDK
-    title: string
-    cap: number
-}
-
-@Injectable()
-export class ConverterService {
+export abstract class ConverterService {
     private async getFiles(
         folderTitle: string,
         cap: number
-    ): Promise<{ path: string; listDicrecotry: string[] }> {
+    ): Promise<{ path: string; listDirectory: string[] }> {
         const path = join(
             __dirname,
             '..',
@@ -49,11 +26,11 @@ export class ConverterService {
 
         const listDicrecotry = await fsp.readdir(path)
 
-        return { listDicrecotry, path }
+        return { listDirectory: listDicrecotry, path }
     }
 
-    private orderPages(listDicrecotry: string[]): string[] {
-        const transform = listDicrecotry
+    private orderPages(listDirectory: string[]): string[] {
+        const transform = listDirectory
             .map(page => Number(page.replace('.jpg', '')))
             .sort((a, b) => a - b)
             .map(pageNumber => `${pageNumber}.jpg`)
@@ -61,22 +38,72 @@ export class ConverterService {
         return transform
     }
 
-    private removeDirectories(listDicrecotry: string[], path: string) {
-        listDicrecotry.forEach(
-            async page => await fs.promises.unlink(`${path}/${page}`)
-        )
+    private async removeDirectories(
+        listDirectory: string[],
+        path: string
+    ): Promise<void> {
+        for (const page of listDirectory) {
+            await fs.promises.unlink(`${path}/${page}`)
+        }
 
         rimraf(path, () => console.log('diretorio apagado'))
     }
 
-    private async ILovePdfProcess({
+    protected abstract ConverterProviderService(
+        data: ProcessParams
+    ): Promise<void>
+
+    public async execute({ cap, title }: GetParams): Promise<void> {
+        try {
+            const { listDirectory, path } = await this.getFiles(title, cap)
+
+            const filesArray = this.orderPages(listDirectory)
+
+            await this.ConverterProviderService({
+                cap,
+                title,
+                filesArray,
+                path,
+            })
+
+            this.removeDirectories(listDirectory, path)
+
+            console.log(
+                'Processo finalizado e arquivos apagados, verificar pasta download'
+            )
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
+
+@Injectable()
+class ILovePDfConverterService extends ConverterService {
+    private _sdk: ILovePdfSDK
+
+    private get sdk(): ILovePdfSDK {
+        return this._sdk
+    }
+
+    private set sdk(sdkInstance: ILovePdfSDK) {
+        this._sdk = sdkInstance
+    }
+
+    constructor() {
+        super()
+        this.sdk = new IlovepdfSDK(
+            process.env.LOVE_PDF_PROJECT_KEY,
+            process.env.LOVE_PDF_SECRET_KEY
+        )
+    }
+
+    protected async ConverterProviderService({
         cap,
         filesArray,
         path,
-        sdk,
         title,
-    }: ILovePDfProcess) {
-        const task = await sdk.createTask('imagepdf')
+    }: ProcessParams): Promise<void> {
+        const task = await this.sdk.createTask('imagepdf')
 
         console.log('Requisição de trabalho a i love dpf inciada')
         console.log('Começando processo de envio das paginas')
@@ -95,33 +122,9 @@ export class ConverterService {
 
         await task.download(`${outPath}/${title}-cap-${cap}.pdf`)
     }
+}
 
-    public async execute({ cap, title }: GetParams): Promise<void> {
-        try {
-            const sdk = new IlovepdfSDK(
-                process.env.LOVE_PDF_PROJECT_KEY,
-                process.env.LOVE_PDF_SECRET_KEY
-            ) as ILovePdfSDK
-
-            const { listDicrecotry, path } = await this.getFiles(title, cap)
-
-            const filesArray = this.orderPages(listDicrecotry)
-
-            await this.ILovePdfProcess({
-                cap,
-                title,
-                filesArray,
-                path,
-                sdk,
-            })
-
-            this.removeDirectories(listDicrecotry, path)
-
-            console.log(
-                'Processo finalizado e arquivos apagados, verificar pasta download'
-            )
-        } catch (error) {
-            console.log(error)
-        }
-    }
+export const ConverterServiceInstance = {
+    provide: ConverterService,
+    useClass: ILovePDfConverterService,
 }

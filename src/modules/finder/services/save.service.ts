@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { ExtractCap } from './finder.service'
+import { ExtractCap } from '../dtos/finderService'
 import { join } from 'path'
 import * as fetch from 'node-fetch'
 
@@ -7,7 +7,7 @@ import * as fs from 'fs'
 import { InjectQueue } from '@nestjs/bull'
 import { QueueKeys } from '../queues'
 import { Queue } from 'bull'
-import { GetParams } from '../services/converter.service'
+import { GetParams } from '../dtos/converterService'
 
 @Injectable()
 export class SaveService {

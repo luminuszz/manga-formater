@@ -1,5 +1,4 @@
 import {
-    InjectQueue,
     OnQueueActive,
     OnQueueCompleted,
     OnQueueFailed,
@@ -8,9 +7,8 @@ import {
     Processor,
 } from '@nestjs/bull'
 import { Injectable } from '@nestjs/common'
-import { Job, Queue } from 'bull'
-import { GetParams } from '../services/converter.service'
-import { ExtractCap } from '../services/finder.service'
+import { Job } from 'bull'
+import { ExtractCap } from '../dtos/finderService'
 import { SaveService } from '../services/save.service'
 
 import { QueueKeys } from './index'

@@ -16,7 +16,7 @@ export class FinderController {
     @Post()
     public async activeFinderRequest(
         @Body('paths', URLFormatter) data: DataExtract[]
-    ): Promise<any> {
+    ): Promise<void> {
         data.map(({ cap, currentUrl, title }) =>
             this.filterPipeQueue.add({ cap, title, currentUrl })
         )
