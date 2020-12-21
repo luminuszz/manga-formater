@@ -1,7 +1,7 @@
-<p align="center">
-    <p>Manga finder</p>
+<center align="center">
+    <h2>Manga finder</h2>
     <img src="./img/readme1.jpg" width="450" alt="Nest Logo" />
-</p>
+</center>
 
 
 ## Description
