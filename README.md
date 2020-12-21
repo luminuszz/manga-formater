@@ -1,12 +1,13 @@
 <center align="center">
-    <h2>Manga finder</h2>
-    <img src="./img/readme1.jpg" width="450" alt="Nest Logo" />
+    <h2>Manga scraping</h2>
 </center>
+
+ <img src="./img/readme1.jpg" width="450" alt="Nest Logo" />
 
 
 ## Description
 
- Web scraping and converter manga
+A web scraping based on the mangalivre site structure to search for mangas download them and convert them to pdf
 
 ## Installation
 
