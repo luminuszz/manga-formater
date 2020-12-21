@@ -6,14 +6,14 @@ import { ExtractCap, Page, Img, Span } from '../dtos/finderService'
 
 @Injectable()
 export class FinderService {
-    private _pages: Page[] = []
+    private _pages: Page[]
 
     private get pages(): Page[] {
         return this._pages
     }
 
     constructor(private readonly eventEmitter: EventEmitter2) {
-        // this._pages = []
+        this._pages = []
     }
 
     public async lunchBrowser(): Promise<puppeteer.Browser> {
@@ -89,7 +89,12 @@ export class FinderService {
 
             this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
 
-            return extract
+            const formatExtract: ExtractCap = {
+                ...extract,
+                title: extract.title.replace(/\./gi, '').toLowerCase(),
+            }
+
+            return formatExtract
         } catch (error) {
             console.log(error)
         }

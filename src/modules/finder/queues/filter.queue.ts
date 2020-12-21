@@ -36,8 +36,6 @@ export class FinderFilePipe {
     public async filterPipe(job: Job<PipeMangaFinderRequest>): Promise<void> {
         const { cap, title, currentUrl } = job.data
 
-        console.log('procurando na base de dados')
-
         const checkMangaExists = await this.mangaService.findOneMangaByName(
             title
         )

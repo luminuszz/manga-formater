@@ -17,7 +17,9 @@ export function extractTUrl(urls: string[]): DataExtract[] {
 
         return {
             currentUrl: url,
-            title: split[dataPosition.title].replace(rgx, ' '),
+            title: split[dataPosition.title]
+                .replace(rgx, ' ')
+                .replace(/\./gi, ''),
             cap: parseInt(split[dataPosition.cap].replace('capitulo-', '')),
         }
     })

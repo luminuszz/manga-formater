@@ -34,6 +34,8 @@ export class RegisterMangaEvent {
             return
         }
 
-        await this.mangaService.createManga(payload)
+        await this.mangaService.createManga({
+            ...payload,
+        })
     }
 }
