@@ -7,7 +7,7 @@
 
 ## Description
 
- Web scraping and converter manga
+A web scraping based on the mangalivre site structure to search for mangas download them and convert them to pdf
 
 ## Installation
 
