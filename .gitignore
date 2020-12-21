@@ -3,7 +3,7 @@
 /node_modules
 /temp
 /download
-.env
+/.env
 
 # Logs
 logs
