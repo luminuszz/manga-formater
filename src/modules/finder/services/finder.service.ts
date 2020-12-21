@@ -88,20 +88,24 @@ export class FinderService {
     }
 
     public async execute(url: string): Promise<ExtractCap> {
-        const browser = await this.luachBrowser()
+        try {
+            const browser = await this.luachBrowser()
 
-        const page = await browser.newPage()
+            const page = await browser.newPage()
 
-        await page.goto(url)
+            await page.goto(url)
 
-        const extract = await this.extractPages(page)
+            const extract = await this.extractPages(page)
 
-        console.log(extract)
+            console.log(extract)
 
-        await browser.close()
+            await browser.close()
 
-        this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
+            this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
 
-        return extract
+            return extract
+        } catch (error) {
+            console.log(error)
+        }
     }
 }

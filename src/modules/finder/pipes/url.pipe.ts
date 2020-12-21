@@ -1,11 +1,14 @@
 import { ArgumentMetadata, PipeTransform } from '@nestjs/common'
+import { DataExtract, extractTUrl } from 'src/shared/utils/extractorUrl'
 
 export class URLFormatter implements PipeTransform {
-    public transform(urls: string[], _: ArgumentMetadata): string[] {
-        const removeRepeatsUrls = urls.filter(
+    public transform(urls: string[], _: ArgumentMetadata): any[] {
+        const removedRepeatsUrls = urls.filter(
             (url, index) => urls.indexOf(url) === index
         )
 
-        return removeRepeatsUrls
+        console.log(removedRepeatsUrls)
+
+        return extractTUrl(removedRepeatsUrls)
     }
 }

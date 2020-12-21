@@ -8,6 +8,7 @@ import { QueueKeys } from './queues'
 import { SaveService } from './services/save.service'
 import { ConverterService } from './services/converter.service'
 import { ConverterFileProcess } from './queues/converterPdf.queue'
+import { FinderFilePipe } from './queues/filter.queue'
 import { MangaModule } from '../manga/manga.module'
 
 @Module({
@@ -21,6 +22,9 @@ import { MangaModule } from '../manga/manga.module'
         BullModule.registerQueue({
             name: QueueKeys.converterFile,
         }),
+        BullModule.registerQueue({
+            name: QueueKeys.pipeMangaFinder,
+        }),
         MangaModule,
     ],
     providers: [
@@ -28,6 +32,7 @@ import { MangaModule } from '../manga/manga.module'
         FindDerDownloaderConsumer,
         SaveFileQueueProcess,
         ConverterFileProcess,
+        FinderFilePipe,
         SaveService,
         ConverterService,
     ],

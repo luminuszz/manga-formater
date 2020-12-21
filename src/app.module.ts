@@ -9,6 +9,7 @@ import {
 } from './config/module.config'
 import { FinderModule } from './modules/finder/finder.module'
 import { MangaModule } from './modules/manga/manga.module'
+import { UsersModule } from './modules/users/users.module'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
@@ -20,6 +21,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
         EventEmitterModule.forRoot(eventEmitterConfig),
         MangaModule,
         FinderModule,
+        UsersModule,
     ],
     controllers: [],
     providers: [],

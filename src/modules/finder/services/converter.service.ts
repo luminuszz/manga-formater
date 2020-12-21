@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common'
 import * as IlovepdfSDK from 'ilovepdf-sdk'
 import * as rimraf from 'rimraf'
@@ -13,9 +14,19 @@ export interface GetParams {
     cap: number
 }
 
-interface ServerResponse {
-    server: string
-    task: string
+interface ILovePdfSDK {
+    createTask: (taskToken: string) => Promise<any>
+    addFile: (filePath: string) => Promise<any>
+    process: () => Promise<any>
+    download: (outDirectory: string) => Promise<any>
+}
+
+interface ILovePDfProcess {
+    filesArray: string[]
+    path: string
+    sdk: ILovePdfSDK
+    title: string
+    cap: number
 }
 
 @Injectable()
@@ -50,18 +61,21 @@ export class ConverterService {
         return transform
     }
 
-    public async execute({ cap, title }: GetParams): Promise<void> {
-        const sdk = new IlovepdfSDK(
-            process.env.LOVE_PDF_PROJECT_KEY,
-            process.env.LOVE_PDF_SECRET_KEY
+    private removeDirectories(listDicrecotry: string[], path: string) {
+        listDicrecotry.forEach(
+            async page => await fs.promises.unlink(`${path}/${page}`)
         )
 
-        const { listDicrecotry, path } = await this.getFiles(title, cap)
+        rimraf(path, () => console.log('diretorio apagado'))
+    }
 
-        const filesArray = this.orderPages(listDicrecotry)
-
-        console.log(filesArray)
-
+    private async ILovePdfProcess({
+        cap,
+        filesArray,
+        path,
+        sdk,
+        title,
+    }: ILovePDfProcess) {
         const task = await sdk.createTask('imagepdf')
 
         console.log('Requisição de trabalho a i love dpf inciada')
@@ -80,15 +94,34 @@ export class ConverterService {
         console.log('Processamento completo, começando requisição de download')
 
         await task.download(`${outPath}/${title}-cap-${cap}.pdf`)
+    }
 
-        listDicrecotry.forEach(
-            async page => await fs.promises.unlink(`${path}/${page}`)
-        )
+    public async execute({ cap, title }: GetParams): Promise<void> {
+        try {
+            const sdk = new IlovepdfSDK(
+                process.env.LOVE_PDF_PROJECT_KEY,
+                process.env.LOVE_PDF_SECRET_KEY
+            ) as ILovePdfSDK
 
-        rimraf(path, () => console.log('diretorio apagado'))
+            const { listDicrecotry, path } = await this.getFiles(title, cap)
 
-        console.log(
-            'Processo finalizado e arquivos apagados, verificar pasta download'
-        )
+            const filesArray = this.orderPages(listDicrecotry)
+
+            await this.ILovePdfProcess({
+                cap,
+                title,
+                filesArray,
+                path,
+                sdk,
+            })
+
+            this.removeDirectories(listDicrecotry, path)
+
+            console.log(
+                'Processo finalizado e arquivos apagados, verificar pasta download'
+            )
+        } catch (error) {
+            console.log(error)
+        }
     }
 }
