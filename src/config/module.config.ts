@@ -1,8 +1,10 @@
 import { ConfigModuleOptions } from '@nestjs/config/dist/interfaces'
 import { EventEmitterModuleOptions } from '@nestjs/event-emitter/dist/interfaces'
-import { MongooseModuleOptions } from '@nestjs/mongoose'
+import { JwtModuleOptions } from '@nestjs/jwt'
+import { IAuthModuleOptions } from '@nestjs/passport'
 import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { QueueOptions } from 'bull'
+import { jwtConfig } from './jwt.config'
 import envvar from './envvar'
 
 export const configModule: ConfigModuleOptions = {
@@ -34,4 +36,14 @@ export const typeOrmModuleConfig: TypeOrmModuleOptions = {
     useUnifiedTopology: true,
     database: 'mangafinder',
     entities: ['dist/**/schemas/*.schema.js'],
+}
+
+export const jwtModuleConfig: JwtModuleOptions = {
+    secret: jwtConfig.secret,
+    signOptions: {
+        expiresIn: jwtConfig.expireIn,
+    },
+}
+export const passportModuleConfig: IAuthModuleOptions = {
+    defaultStrategy: 'jwt',
 }

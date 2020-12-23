@@ -1,5 +1,5 @@
 import { BullModule } from '@nestjs/bull'
-import { Module } from '@nestjs/common'
+import { ClassSerializerInterceptor, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import {
     bullModuleConfig,
@@ -12,6 +12,9 @@ import { MangaModule } from './modules/manga/manga.module'
 import { UsersModule } from './modules/users/users.module'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
+import { ClassValidatorPipe } from './shared/pipes/classValidator.pipe'
+import { AuthModule } from './modules/auth/auth.module'
 
 @Module({
     imports: [
@@ -22,8 +25,17 @@ import { TypeOrmModule } from '@nestjs/typeorm'
         MangaModule,
         FinderModule,
         UsersModule,
+        AuthModule,
+    ],
+
+    providers: [
+        { provide: APP_PIPE, useClass: ClassValidatorPipe },
+
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: ClassSerializerInterceptor,
+        },
     ],
     controllers: [],
-    providers: [],
 })
 export class AppModule {}
