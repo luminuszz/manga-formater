@@ -12,6 +12,7 @@ export class Chapter {
 
 export class createMangaDTO {
     cap: number
+    slug: string
     title: string
     author: string
     pages: Page[]

@@ -87,12 +87,13 @@ export class FinderService {
 
             await browser.close()
 
-            this.eventEmitter.emit(MangaEvent.mangaExtract, extract)
-
-            const formatExtract: ExtractCap = {
+            const formatExtract = {
                 ...extract,
                 title: extract.title.replace(/\./gi, '').toLowerCase(),
+                slug: extract.title.replace(/\s/g, '-'),
             }
+
+            this.eventEmitter.emit(MangaEvent.mangaExtract, formatExtract)
 
             return formatExtract
         } catch (error) {
