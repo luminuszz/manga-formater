@@ -31,6 +31,12 @@ export class Manga {
     @ObjectIdColumn()
     id: ObjectID
 
+    @Column()
+    slug: string
+
+    @Column()
+    posterImage: string
+
     @Column({ nullable: false })
     title: string
 

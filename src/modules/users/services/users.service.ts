@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { HashService } from 'src/shared/providers/hash/hash.service'
 import { MongoRepository } from 'typeorm'
@@ -19,6 +19,14 @@ export class UserService {
     ) {}
 
     public async createUser(data: createUserDTO): Promise<User> {
+        const checkUserExists = await this.usersRepository.findOne({
+            where: { email: data.email },
+        })
+
+        if (checkUserExists) {
+            throw new BadRequestException('User already exists')
+        }
+
         const newUser = this.usersRepository.create(data)
 
         newUser.password = await this.hashService.createHash(newUser.password)
@@ -30,6 +38,14 @@ export class UserService {
     }
 
     public async createAdminUser(data: createUserDTO): Promise<User> {
+        const checkUserExists = await this.usersRepository.findOne({
+            where: { email: data.email },
+        })
+
+        if (checkUserExists) {
+            throw new BadRequestException('User already exists')
+        }
+
         const newUser = this.usersRepository.create(data)
 
         newUser.password = await this.hashService.createHash(newUser.password)

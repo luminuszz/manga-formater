@@ -8,7 +8,6 @@ import { UserService } from '../services/users.service'
 export class UsersController {
     constructor(private readonly usersService: UserService) {}
 
-    @AuthFlow('jwt', 'admin')
     @Post()
     public async createUser(@Body() data: createUserDTO): Promise<User> {
         const newUSer = await this.usersService.createUser(data)

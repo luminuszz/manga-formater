@@ -48,6 +48,7 @@ export class FinderFilePipe {
             )
             if (!findChapter) {
                 console.log('capitulo fora da base fazendo busca')
+
                 this.finderFileQueue.add({ url: currentUrl })
 
                 return
