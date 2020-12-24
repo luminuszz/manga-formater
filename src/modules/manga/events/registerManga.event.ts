@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
+import { ExtractCap } from 'src/modules/finder/dtos/finderService'
 import { createMangaDTO } from '../dtos/createManga.dto'
 import { MangaService } from '../services/manga.service'
 
@@ -12,7 +13,9 @@ export class RegisterMangaEvent {
     constructor(private readonly mangaService: MangaService) {}
 
     @OnEvent(MangaEvent.mangaExtract, { async: true })
-    public async executeMangaExtract(payload: createMangaDTO): Promise<void> {
+    public async executeMangaExtract(payload: ExtractCap): Promise<void> {
+        console.log(payload)
+
         console.log(`-> event: ${MangaEvent.mangaExtract} summon `)
 
         const checkMangaExists = await this.mangaService.findOneMangaByName(
@@ -36,6 +39,7 @@ export class RegisterMangaEvent {
 
         await this.mangaService.createManga({
             ...payload,
+            posterImage: payload.posterImage,
         })
     }
 }

@@ -12,7 +12,10 @@ export interface ExtractCap {
     title: string
     author: string
     cap: number
+    slug: string
+    posterImage: string
 }
 
 export type Span = HTMLSpanElement
 export type Img = HTMLImageElement
+export type Div = HTMLDivElement

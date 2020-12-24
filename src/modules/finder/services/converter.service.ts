@@ -1,6 +1,7 @@
 import * as IlovepdfSDK from 'ilovepdf-sdk'
 import * as rimraf from 'rimraf'
 import * as fs from 'fs'
+import * as JsZip from 'jszip'
 
 import { Injectable } from '@nestjs/common'
 import { outPath } from '../dtos/constants'
@@ -124,7 +125,45 @@ class ILovePDfConverterService extends ConverterService {
     }
 }
 
+@Injectable()
+class ZipFIleConverterService extends ConverterService {
+    private _jsZip: JsZip
+
+    private get jsZip(): JsZip {
+        return this._jsZip
+    }
+
+    private set jsZip(sdkInstance: JsZip) {
+        this._jsZip = sdkInstance
+    }
+
+    constructor() {
+        super()
+        this.jsZip = new JsZip()
+    }
+
+    protected async ConverterProviderService(
+        data: ProcessParams
+    ): Promise<void> {
+        for (const page of data.filesArray) {
+            this.jsZip.file(page, `${data.path}/${page}`, {
+                createFolders: false,
+                dir: false,
+            })
+        }
+
+        this.jsZip
+            .generateNodeStream({ type: 'nodebuffer', streamFiles: true })
+            .pipe(
+                fs.createWriteStream(`${outPath}/${data.title}-${data.cap}.zip`)
+            )
+            .on('finish', () => {
+                console.log('finish')
+            })
+    }
+}
+
 export const ConverterServiceInstance = {
     provide: ConverterService,
-    useClass: ILovePDfConverterService,
+    useClass: ZipFIleConverterService,
 }

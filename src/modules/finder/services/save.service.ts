@@ -4,18 +4,9 @@ import { join } from 'path'
 import * as fetch from 'node-fetch'
 
 import * as fs from 'fs'
-import { InjectQueue } from '@nestjs/bull'
-import { QueueKeys } from '../queues'
-import { Queue } from 'bull'
-import { GetParams } from '../dtos/converterService'
 
 @Injectable()
 export class SaveService {
-    constructor(
-        @InjectQueue(QueueKeys.converterFile)
-        private readonly converterQueue: Queue<GetParams>
-    ) {}
-
     private async renderImage(url: string, fileName: string, path: string) {
         try {
             const response = await fetch(url)
@@ -30,7 +21,7 @@ export class SaveService {
         }
     }
 
-    public async execute(data: ExtractCap): Promise<void> {
+    public async execute(data: ExtractCap): Promise<any> {
         const formatterTitle = data.title.replace(/\s/g, '-')
 
         const folder = join(
@@ -54,6 +45,6 @@ export class SaveService {
         }
         const { cap } = data
 
-        this.converterQueue.add({ cap, title: formatterTitle })
+        return { cap, title: formatterTitle }
     }
 }

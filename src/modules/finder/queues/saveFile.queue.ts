@@ -1,4 +1,5 @@
 import {
+    InjectQueue,
     OnQueueActive,
     OnQueueCompleted,
     OnQueueFailed,
@@ -7,7 +8,8 @@ import {
     Processor,
 } from '@nestjs/bull'
 import { Injectable } from '@nestjs/common'
-import { Job } from 'bull'
+import { Job, Queue } from 'bull'
+import { GetParams } from '../dtos/converterService'
 import { ExtractCap } from '../dtos/finderService'
 import { SaveService } from '../services/save.service'
 
@@ -16,7 +18,11 @@ import { QueueKeys } from './index'
 @Processor(QueueKeys.saveFile)
 @Injectable()
 export class SaveFileQueueProcess {
-    constructor(private readonly saveService: SaveService) {}
+    constructor(
+        private readonly saveService: SaveService,
+        @InjectQueue(QueueKeys.converterFile)
+        private readonly converterQueue: Queue<GetParams>
+    ) {}
 
     @Process()
     public async execute(job: Job<ExtractCap>): Promise<void> {
@@ -44,5 +50,7 @@ export class SaveFileQueueProcess {
         console.log(
             `job ${job.id} da fila ${job.name} finalizado, enviado para fila de conversão...`
         )
+
+        this.converterQueue.add(job.data)
     }
 }

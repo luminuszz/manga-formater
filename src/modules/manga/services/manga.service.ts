@@ -30,6 +30,7 @@ export class MangaService {
 
         newManga.author = data.author
         newManga.title = data.title
+        newManga.posterImage = data.posterImage
         newManga.slug = data.title.replace(/\s/g, '-')
         newManga.chapters = [chapter]
 

@@ -2,7 +2,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import * as puppeteer from 'puppeteer'
 import { Injectable } from '@nestjs/common'
 import { MangaEvent } from 'src/modules/manga/events/registerManga.event'
-import { ExtractCap, Page, Img, Span } from '../dtos/finderService'
+import { ExtractCap, Page, Img, Span, Div } from '../dtos/finderService'
 
 @Injectable()
 export class FinderService {
@@ -32,6 +32,14 @@ export class FinderService {
             '.author',
             (span: Span) => span.innerText
         )
+
+        const posterImage = await page.$eval('.series-cover', (div: Div) => {
+            const string = div.getAttribute('style')
+            return string
+                .replace('background-image:url(', '')
+                .replace(')', '')
+                .replace(/'/gi, '')
+        })
 
         const totalOfPages = await page.$eval(
             'em[reader-total-pages]',
@@ -70,6 +78,7 @@ export class FinderService {
         return {
             author,
             pages: this.pages,
+            posterImage,
             title,
             cap,
         } as ExtractCap
@@ -97,7 +106,7 @@ export class FinderService {
 
             return formatExtract
         } catch (error) {
-            console.log(error)
+            throw new Error(error)
         }
     }
 }

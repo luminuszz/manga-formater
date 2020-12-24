@@ -10,6 +10,8 @@ import { ConverterServiceInstance } from './services/converter.service'
 import { ConverterFileProcess } from './queues/converterPdf.queue'
 import { FinderFilePipe } from './queues/filter.queue'
 import { MangaModule } from '../manga/manga.module'
+import { ScrappingService } from './services/sracpping.service'
+import { ScrappingMangasTask } from '../finder/tasks/scrapingMagas.task'
 
 @Module({
     imports: [
@@ -34,6 +36,8 @@ import { MangaModule } from '../manga/manga.module'
         ConverterFileProcess,
         FinderFilePipe,
         SaveService,
+        ScrappingService,
+        ScrappingMangasTask,
         ConverterServiceInstance,
     ],
     controllers: [FinderController],

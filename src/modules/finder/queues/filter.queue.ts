@@ -63,6 +63,8 @@ export class FinderFilePipe {
             this.saveFileQueue.add({
                 author,
                 title,
+                posterImage: checkMangaExists.posterImage,
+                slug: checkMangaExists.slug,
                 cap: findChapter.chapterNumber,
                 pages: formattedChapter,
             })
