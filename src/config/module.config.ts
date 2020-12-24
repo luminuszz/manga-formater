@@ -29,14 +29,22 @@ export const eventEmitterConfig: EventEmitterModuleOptions = {
     ignoreErrors: false,
 }
 
-export const typeOrmModuleConfig: TypeOrmModuleOptions = {
-    type: 'mongodb',
-    host: 'localhost',
-    port: 27017,
-    useUnifiedTopology: true,
-    database: 'mangafinder',
-    entities: ['dist/**/schemas/*.schema.js'],
-}
+export const typeOrmModuleConfig: TypeOrmModuleOptions =
+    process.env.NODE_ENV === 'development'
+        ? {
+              type: 'mongodb',
+              host: 'localhost',
+              port: 27017,
+              useUnifiedTopology: true,
+              database: 'mangafinder',
+              entities: ['dist/**/schemas/*.schema.js'],
+          }
+        : {
+              type: 'mongodb',
+              useUnifiedTopology: true,
+              url: process.env.MONGO_URL,
+              entities: ['dist/**/schemas/*.schema.js'],
+          }
 
 export const jwtModuleConfig: JwtModuleOptions = {
     secret: jwtConfig.secret,
